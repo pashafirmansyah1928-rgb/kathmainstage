@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Klasmen Grup F</title>
+<style>
+body {
+  background:#0f0f0f;
+  color:#fff;
+  font-family:Arial, sans-serif;
+  padding:20px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:30px;
+}
+th, td {
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+}
+th {
+  background:#1c1c1c;
+}
+.status {
+  font-weight:bold;
+  color:#4caf50;
+}
+button {
+  padding:10px 20px;
+  background:#4caf50;
+  border:none;
+  cursor:pointer;
+}
+input {
+  width:40px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Klasmen Grup F</h2>
+
+<table id="klasemen">
+<thead>
+<tr>
+  <th>Rank</th>
+  <th>Team</th>
+  <th>MW</th>
+  <th>ML</th>
+  <th>GW</th>
+  <th>GL</th>
+  <th>Point</th>
+  <th>Status</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<h3>## Hasil Match Grup F</h3>
+
+<div id="matches"></div>
+<br>
+<button onclick="updateKlasemen()">Update Klasemen</button>
+
+<script>
+const teams = [
+  "Kath.Inc",
+  "Lunarian",
+  "TACT",
+  "Cellineyours"
+];
+
+let data = {};
+
+teams.forEach(t => {
+  data[t] = { MW:0, ML:0, GW:0, GL:0, Point:0 };
+});
+
+const matchList = [
+  ["Kath.Inc","Lunarian"],
+  ["TACT","Cellineyours"],
+  ["Kath.Inc","TACT"],
+  ["Lunarian","Cellineyours"],
+  ["Kath.Inc","Cellineyours"],
+  ["Lunarian","TACT"]
+];
+
+const matchesDiv = document.getElementById("matches");
+
+matchList.forEach((m,i)=>{
+  matchesDiv.innerHTML += `
+    <div>
+      ${m[0]} vs ${m[1]}
+      <input type="number" min="0" id="a${i}">
+      :
+      <input type="number" min="0" id="b${i}">
+    </div>
+  `;
+});
+
+function updateKlasemen() {
+  teams.forEach(t => {
+    data[t] = { MW:0, ML:0, GW:0, GL:0, Point:0 };
+  });
+
+  matchList.forEach((m,i)=>{
+    const a = parseInt(document.getElementById("a"+i).value);
+    const b = parseInt(document.getElementById("b"+i).value);
+    if (isNaN(a) || isNaN(b)) return;
+
+    data[m[0]].GW += a;
+    data[m[0]].GL += b;
+    data[m[1]].GW += b;
+    data[m[1]].GL += a;
+
+    if (a > b) {
+      data[m[0]].MW++;
+      data[m[1]].ML++;
+      data[m[0]].Point += 3;
+    } else if (b > a) {
+      data[m[1]].MW++;
+      data[m[0]].ML++;
+      data[m[1]].Point += 3;
+    }
+  });
+
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.querySelector("#klasemen tbody");
+  tbody.innerHTML = "";
+
+  const sorted = Object.entries(data).sort((a,b)=>{
+    if (b[1].Point !== a[1].Point) return b[1].Point - a[1].Point;
+    const gdA = a[1].GW - a[1].GL;
+    const gdB = b[1].GW - b[1].GL;
+    return gdB - gdA;
+  });
+
+  sorted.forEach((t,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${t[0]}</td>
+        <td>${t[1].MW}</td>
+        <td>${t[1].ML}</td>
+        <td>${t[1].GW}</td>
+        <td>${t[1].GL}</td>
+        <td>${t[1].Point}</td>
+        <td class="status">${i < 2 ? "Lolos ke Swiss Stage" : ""}</td>
+      </tr>
+    `;
+  });
+}
+
+// tampilkan klasemen 0-0 dari awal
+renderTable();
+</script>
+
+</body>
+</html>
